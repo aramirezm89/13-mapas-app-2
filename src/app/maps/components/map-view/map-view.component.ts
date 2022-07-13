@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import mapboxgl, { Popup, Marker, LngLat } from 'mapbox-gl';
+import mapboxgl, { Popup, Marker, Map } from 'mapbox-gl';
+import { MapsService } from '../../services/maps.service';
 import { PlacesService } from '../../services/places.service';
 
 @Component({
@@ -9,8 +10,8 @@ import { PlacesService } from '../../services/places.service';
 })
 export class MapViewComponent implements AfterViewInit {
   @ViewChild('mapdiv') mapDivElement!: ElementRef;
-
-  constructor(private placesService: PlacesService) {
+  mapa! : Map;
+  constructor(private placesService: PlacesService, private mapService : MapsService) {
 
   }
 
@@ -20,15 +21,15 @@ export class MapViewComponent implements AfterViewInit {
       throw new Error('No hay placeService.useLocation');
     }
 
-    const map = new mapboxgl.Map({
+     this.mapa = new mapboxgl.Map({
       container: this.mapDivElement.nativeElement, // container ID
       style: 'mapbox://styles/mapbox/light-v10', // style URL
       center: this.placesService.getUseLocation, // starting position [lng, lat]
       zoom: 14, // starting zoom
       projection: { name: 'globe' }, // display the map as a 3D globe
     });
-    map.on('style.load', () => {
-      map.setFog({}); // Set the default atmosphere style
+    this.mapa.on('style.load', () => {
+      this.mapa.setFog({}); // Set the default atmosphere style
     });
 
 
@@ -44,10 +45,10 @@ export class MapViewComponent implements AfterViewInit {
     })
       .setLngLat(this.placesService.getUseLocation)
       .setPopup(popup)
-      .addTo(map);
+      .addTo(this.mapa);
 
 
-       map.on('dblclick', (ev) => {
+       this.mapa.on('dblclick', (ev) => {
          const { lng, lat } = ev.lngLat;
          this.placesService.setUseLocation = [lng, lat];
          new Marker({
@@ -55,7 +56,9 @@ export class MapViewComponent implements AfterViewInit {
          })
            .setLngLat(this.placesService.getUseLocation)
            .setPopup(popup)
-           .addTo(map);
+           .addTo(this.mapa);
        });
+
+       this.mapService.setMapa(this.mapa)
   }
 }
