@@ -1,15 +1,36 @@
 import { Component, OnInit } from '@angular/core';
+import { Feature } from '../../interfaces/places';
+import { PlacesService } from '../../services/places.service'
+import { MapsService } from '../../services/maps.service'
+import { Marker, Popup } from 'mapbox-gl';
 
 @Component({
   selector: 'app-search-results',
   templateUrl: './search-results.component.html',
-  styleUrls: ['./search-results.component.css']
+  styleUrls: ['./search-results.component.css'],
 })
 export class SearchResultsComponent implements OnInit {
+  placeSelectedId? : string;
 
-  constructor() { }
-
-  ngOnInit(): void {
+  get isLoadingPlaces(): boolean {
+    return this.placesService.isLoadingPlaces;
   }
 
+  get isPlaces(): Feature[] {
+    return this.placesService.places;
+  }
+  constructor(
+    private placesService: PlacesService,
+    private mapService: MapsService
+  ) {}
+
+  ngOnInit(): void {}
+
+  flyTo(place : Feature){
+    this.placeSelectedId = place.id
+   const [lng,lat] = place.center
+    this.mapService.flyto([lng,lat])
+
+
+  }
 }

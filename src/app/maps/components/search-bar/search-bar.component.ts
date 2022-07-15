@@ -1,4 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { MapsService } from '../../services/maps.service';
 import { PlacesService } from '../../services/places.service';
 
 @Component({
@@ -9,12 +10,14 @@ import { PlacesService } from '../../services/places.service';
 export class SearchBarComponent {
 
   private debounceTimer?: NodeJS.Timeout; //"NodeJS debe ser igresado en el archivo tsconfig.app.json es el apartado de types[]"
-  constructor(private placesService : PlacesService) {}
+  constructor(private placesService : PlacesService , private mapService : MapsService) {}
 
 
 
   onQueryChanged(query : string = ''){
-
+    if(query.length === 0){
+      this.mapService.deleteMarkers()
+    }
     if(this.debounceTimer){
       clearTimeout(this.debounceTimer);
     }
