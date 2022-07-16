@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LngLat, LngLatLike, Map, Marker, Popup } from 'mapbox-gl';
+import { LngLatLike, Map, Marker, Popup } from 'mapbox-gl';
 import { Feature } from '../interfaces/places';
 
 @Injectable({
