@@ -60,7 +60,7 @@ export class PlacesService {
       .subscribe((res) => {
         this.isLoadingPlaces = false;
         this.places = res.features;
-        this.mapService.createMarker(res.features)
+        this.mapService.createMarker(res.features,this._useLocation)
       });
   }
 }

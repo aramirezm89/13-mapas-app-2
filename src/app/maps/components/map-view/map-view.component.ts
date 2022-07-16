@@ -22,12 +22,12 @@ export class MapViewComponent implements AfterViewInit {
     }
 
      this.mapa = new mapboxgl.Map({
-      container: this.mapDivElement.nativeElement, // container ID
-      style: 'mapbox://styles/mapbox/light-v10', // style URL
-      center: this.placesService.getUseLocation, // starting position [lng, lat]
-      zoom: 14, // starting zoom
-      projection: { name: 'globe' }, // display the map as a 3D globe
-    });
+       container: this.mapDivElement.nativeElement, // container ID
+       style: 'mapbox://styles/mapbox/outdoors-v11', // style URL
+       center: this.placesService.getUseLocation, // starting position [lng, lat]
+       zoom: 14, // starting zoom
+       projection: { name: 'globe' }, // display the map as a 3D globe
+     });
     this.mapa.on('style.load', () => {
       this.mapa.setFog({}); // Set the default atmosphere style
     });

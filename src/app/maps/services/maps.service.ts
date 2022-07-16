@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LngLatLike, Map, Marker, Popup } from 'mapbox-gl';
+import { LngLatBounds, LngLatLike, Map, Marker, Popup } from 'mapbox-gl';
 import { Feature } from '../interfaces/places';
 
 @Injectable({
@@ -8,7 +8,7 @@ import { Feature } from '../interfaces/places';
 export class MapsService {
   private _map?: Map;
   private markers: Marker[] = [];
-
+  private _useLocation!: [number, number];
   get getMap(): Map {
     return this._map!;
   }
@@ -33,7 +33,7 @@ export class MapsService {
     });
   }
 
-  createMarker(places: Feature[]) {
+  createMarker(places: Feature[],useLocation:[number,number]) {
     if (!this._map) throw new Error('Mapa no inicializado');
 
     this.markers.forEach((m) => m.remove());
@@ -52,10 +52,41 @@ export class MapsService {
           .setPopup(popup)
           .addTo(this._map!)
       );
+      this.markers.push(
+        new Marker({
+          color: 'red',
+        })
+          .setLngLat(useLocation)
+          .setPopup(popup)
+          .addTo(this._map!)
+      );
+    });
+
+    if (places.length === 0) return;
+
+    //limites del mapa
+
+    const bounds = new LngLatBounds();
+
+    this.markers.forEach((marker) => bounds.extend(marker.getLngLat()));
+
+    this._map.fitBounds(bounds, {
+      padding: 200,
     });
   }
 
   deleteMarkers() {
     this.markers.forEach((m) => m.remove());
+
+     navigator.geolocation.getCurrentPosition(({coords}) =>{
+      const {longitude,latitude} = coords
+     this._map?.flyTo({
+      zoom:15,
+      center:[longitude,latitude],
+      duration:1000
+     })
+    })
+
+
   }
 }
