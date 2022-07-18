@@ -1,5 +1,14 @@
 import { Injectable } from '@angular/core';
-import { LngLatBounds, LngLatLike, Map, Marker, Popup } from 'mapbox-gl';
+import {
+  AnySourceData,
+  LngLatBounds,
+  LngLatLike,
+  Map,
+  Marker,
+  Popup,
+} from 'mapbox-gl';
+import { DirectionsApliClient } from '../api/directionsApliClient';
+import { DirectionResponse, Route } from '../interfaces/directions';
 import { Feature } from '../interfaces/places';
 
 @Injectable({
@@ -8,7 +17,6 @@ import { Feature } from '../interfaces/places';
 export class MapsService {
   private _map?: Map;
   private markers: Marker[] = [];
-  private _useLocation!: [number, number];
   get getMap(): Map {
     return this._map!;
   }
@@ -16,7 +24,7 @@ export class MapsService {
     return !!this._map;
   }
 
-  constructor() {}
+  constructor(private directionApi: DirectionsApliClient) {}
 
   setMapa(mapa: Map) {
     this._map = mapa;
@@ -33,7 +41,7 @@ export class MapsService {
     });
   }
 
-  createMarker(places: Feature[],useLocation:[number,number]) {
+  createMarker(places: Feature[], useLocation: [number, number]) {
     if (!this._map) throw new Error('Mapa no inicializado');
 
     this.markers.forEach((m) => m.remove());
@@ -78,15 +86,81 @@ export class MapsService {
   deleteMarkers() {
     this.markers.forEach((m) => m.remove());
 
-     navigator.geolocation.getCurrentPosition(({coords}) =>{
-      const {longitude,latitude} = coords
-     this._map?.flyTo({
-      zoom:15,
-      center:[longitude,latitude],
-      duration:1000
-     })
-    })
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      const { longitude, latitude } = coords;
+      this._map?.flyTo({
+        zoom: 14,
+        center: [longitude, latitude],
+        duration: 1000,
+      });
+    });
+  }
+
+  getRouteBetweenPoints(start: [number, number], end: [number, number]) {
+    this.directionApi
+      .get<DirectionResponse>(`/${start.join(',')};${end.join(',')}`)
+      .subscribe((res) => {
+        this.drawPolyLine(res.routes[0]);
+      });
+  }
+
+  private drawPolyLine(route: Route) {
+    console.log({
+      distanceKms: (route.distance / 1000).toFixed(2),
+      duration: (route.duration / 60).toFixed(2),
+    });
+
+    if (!this._map) throw new Error('Mapa no inicializado');
+
+    const coords = route.geometry.coordinates;
+
+    const bounds = new LngLatBounds();
+
+    coords.forEach(([lng, lat]) => {
+      bounds.extend([lng, lat]);
+    });
+    this._map?.fitBounds(bounds, {
+      padding: 200,
+    });
+
+    /*  Dibujar Poliline */
+    const sourceData: AnySourceData = {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates: coords },
+          },
+        ],
+      },
+    };
+
+    //remover source y el layer para siempre crear uno nuevo
+     if (this._map.getLayer('RouteString')){
+
+       this._map.removeLayer('RouteString');
+       this._map.removeSource('RouteString');
+     }
 
 
+       this._map.addSource('RouteString', sourceData);
+
+ //
+    this._map.addLayer({
+      id: 'RouteString',
+      type: 'line',
+      source: 'RouteString',
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
+      paint: {
+        'line-color': '#2D8ED6',
+        'line-width': 3,
+      },
+    });
   }
 }

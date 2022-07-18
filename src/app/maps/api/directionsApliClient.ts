@@ -17,7 +17,7 @@ export class DirectionsApliClient extends HttpClient {
     return super.get<T>(url, {
       params: {
         alternatives: false,
-        geometries: 'geojason',
+        geometries: 'geojson',
         language: 'es',
         overview: 'simplified',
         steps: false,

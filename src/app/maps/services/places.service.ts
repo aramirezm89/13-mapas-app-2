@@ -12,6 +12,10 @@ export class PlacesService {
   public isLoadingPlaces: boolean = false;
   public places: Feature[] = [];
 
+
+  set setPlaces(value:Feature[]){
+    this.places = value
+  }
   get getUseLocation() {
     return this._useLocation;
   }

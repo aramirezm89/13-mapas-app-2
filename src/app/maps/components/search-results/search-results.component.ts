@@ -31,6 +31,14 @@ export class SearchResultsComponent implements OnInit {
    const [lng,lat] = place.center
     this.mapService.flyto([lng,lat])
 
+  }
 
+  getDirections(place : Feature){
+
+    if(!this.placesService.getUserLocation) throw new Error('No hay localizacion del usuario disponible')
+    const [startLng,startLat]  = this.placesService.getUseLocation
+    const [endLng,endLat]  = place.center
+    this.placesService.setPlaces = []
+    this.mapService.getRouteBetweenPoints([startLng,startLat],[endLng,endLat])
   }
 }
